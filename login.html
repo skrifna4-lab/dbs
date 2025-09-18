@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Login</title>
+  <style>
+    body { font-family: Arial, sans-serif; margin: 30px; }
+    input { margin: 5px; padding: 5px; }
+    button { padding: 6px 12px; }
+    pre { background: #f4f4f4; padding: 10px; border: 1px solid #ccc; margin-top: 20px; }
+  </style>
+</head>
+<body>
+  <h2>Login</h2>
+  <input id="user" type="text" placeholder="Usuario"><br>
+  <input id="clave" type="password" placeholder="Clave"><br>
+  <button onclick="login()">Entrar</button>
+
+  <h3>Respuesta del servidor:</h3>
+  <pre id="respuesta">Esperando login...</pre>
+
+  <script>
+    async function login() {
+      const user = document.getElementById("user").value;
+      const clave = document.getElementById("clave").value;
+
+      try {
+        const resp = await fetch("http://173.208.192.170:25502/login", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ user, clave })
+        });
+
+        const data = await resp.json();
+
+        console.log("📡 Respuesta completa del servidor:", data);
+
+        // Mostrar todo el JSON en pantalla
+        document.getElementById("respuesta").textContent = JSON.stringify(data, null, 2);
+      } catch (err) {
+        console.error("❌ Error al conectar con el servidor:", err);
+        document.getElementById("respuesta").textContent = "Error al conectar con el servidor";
+      }
+    }
+  </script>
+</body>
+</html>
