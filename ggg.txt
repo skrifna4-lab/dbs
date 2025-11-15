@@ -3,3 +3,4 @@ goku|./db/goku.html
 prrr|./prueba.html
 alerta|./aler.html
 lua|./a.lua
+arr|./arr.html
