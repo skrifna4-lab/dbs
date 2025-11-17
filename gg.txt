@@ -2,3 +2,4 @@ login|./login.html
 goku|./db/goku.html
 prrr|./prueba.html
 arr|./arr.html
+reniec|./rec.html
