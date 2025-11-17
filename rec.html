@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Buscador RENIEC - SKRIFNA.UK</title>
+  <style>
+    /* ====== RESET Y FUENTES ====== */
+    * { margin:0; padding:0; box-sizing:border-box; }
+    body {
+      background-color: #0f1117;
+      color: #e6edf3;
+      font-family: "Inter", "Segoe UI", sans-serif;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 20px;
+    }
+
+    h1 {
+      color: #39d353;
+      font-weight: 700;
+      margin-bottom: 20px;
+      font-size: 2rem;
+      text-align: center;
+      letter-spacing: 1px;
+    }
+
+    /* ====== FORMULARIO ====== */
+    form {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      justify-content: center;
+      margin-bottom: 30px;
+    }
+
+    input {
+      padding: 10px 15px;
+      border-radius: 12px;
+      border: none;
+      width: 200px;
+      background-color: #161b22;
+      color: #e6edf3;
+      transition: 0.2s;
+    }
+
+    input:focus {
+      outline: 2px solid #39d353;
+      background-color: #1b2128;
+    }
+
+    button {
+      padding: 10px 20px;
+      border-radius: 12px;
+      border: none;
+      background: linear-gradient(145deg,#238636,#2ea043);
+      color: #fff;
+      font-weight: 600;
+      cursor: pointer;
+      transition: 0.2s;
+    }
+
+    button:hover {
+      background: linear-gradient(145deg,#2ea043,#238636);
+    }
+
+    /* ====== RESULTADOS ====== */
+    #resultados {
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+      width: 100%;
+      max-width: 650px;
+    }
+
+    .resultado {
+      display: flex;
+      align-items: center;
+      background-color: #161b22;
+      border-radius: 16px;
+      padding: 15px 20px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.4);
+      position: relative;
+      transition: transform 0.2s;
+    }
+
+    .resultado:hover {
+      transform: translateY(-3px);
+    }
+
+    .foto {
+      width: 100px;
+      height: 100px;
+      border-radius: 16px;
+      object-fit: cover;
+      margin-right: 20px;
+      flex-shrink: 0;
+      background-color: #1b2128;
+    }
+
+    .info {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      flex: 1;
+    }
+
+    .info div {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 0.95rem;
+    }
+
+    .label {
+      color: #8b949e;
+      min-width: 110px;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .valor {
+      color: #c9d1d9;
+      font-weight: 600;
+    }
+
+    .recargar {
+      margin-top: 8px;
+      padding: 5px 12px;
+      border-radius: 10px;
+      border: none;
+      background-color: #30363d;
+      color: #c9d1d9;
+      cursor: pointer;
+      align-self: flex-start;
+      font-size: 0.85rem;
+      transition: 0.2s;
+    }
+
+    .recargar:hover {
+      background-color: #484f58;
+    }
+
+    .sin-foto {
+      color: #8b949e;
+      font-style: italic;
+      text-align: center;
+      line-height: 100px;
+    }
+
+    /* ICONOS BENTO */
+    .bento {
+      width: 6px;
+      height: 6px;
+      background-color: #39d353;
+      border-radius: 50%;
+      display: inline-block;
+      margin-right: 6px;
+    }
+
+    p {
+      text-align: center;
+      color: #8b949e;
+      margin-top: 10px;
+    }
+
+  </style>
+</head>
+<body>
+  <h1>RENIEC - SKRIFNA.UK</h1>
+  <form id="formBuscar">
+    <input type="text" id="dni" placeholder="DNI" />
+    <input type="text" id="nombres" placeholder="Nombres" />
+    <input type="text" id="ap_pat" placeholder="Apellido Paterno" />
+    <input type="text" id="ap_mat" placeholder="Apellido Materno" />
+    <button type="submit">Buscar</button>
+  </form>
+
+  <div id="resultados"></div>
+
+<script>
+    const BASE_URL = "https://reniec.ultraplus.click/buscar";
+    const API_FOTOS = "https://reniec.ultraplus.click/dni";
+
+    document.getElementById("formBuscar").addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const resultadosDiv = document.getElementById("resultados");
+      resultadosDiv.innerHTML = "<p>🔎 Buscando...</p>";
+
+      const params = new URLSearchParams();
+      const dni = document.getElementById("dni").value.trim();
+      const nombres = document.getElementById("nombres").value.trim();
+      const ap_pat = document.getElementById("ap_pat").value.trim();
+      const ap_mat = document.getElementById("ap_mat").value.trim();
+
+      if (dni) params.append("dni", dni);
+      if (nombres) params.append("nombres", nombres);
+      if (ap_pat) params.append("ap_pat", ap_pat);
+      if (ap_mat) params.append("ap_mat", ap_mat);
+
+      try {
+        const resp = await fetch(`${BASE_URL}?${params.toString()}`);
+        const data = await resp.json();
+        const resultados = data.resultados || [];
+        resultadosDiv.innerHTML = "";
+
+        if (resultados.length === 0) {
+          resultadosDiv.innerHTML = "<p>❌ No se encontraron resultados.</p>";
+          return;
+        }
+
+        for (const persona of resultados.slice(0, 20)) {
+          const cont = document.createElement("div");
+          cont.className = "resultado";
+
+          const dni = persona.DNI || "Desconocido";
+          const nombre = `${persona.NOMBRES || ""} ${persona.AP_PAT || ""} ${persona.AP_MAT || ""}`.trim();
+          const fecha = persona.FECHA_NAC || "N/A";
+          const direccion = persona.DIRECCION || "No disponible";
+          const sexo = persona.SEXO === "1" ? "Masculino" : "Femenino";
+          const madre = persona.MADRE || "No disponible";
+          const padre = persona.PADRE || "No disponible";
+
+          cont.innerHTML = `
+            <img class="foto" id="fotoCont_${dni}" src="https://via.placeholder.com/100?text=Cargando" alt="Foto">
+            <div class="info">
+              <div><span class="bento"></span><span class="label">Nombre:</span> <span class="valor">${nombre}</span></div>
+              <div><span class="bento"></span><span class="label">DNI:</span> <span class="valor">${dni}</span></div>
+              <div><span class="bento"></span><span class="label">Dirección:</span> <span class="valor">${direccion}</span></div>
+              <div><span class="bento"></span><span class="label">Fecha Nac:</span> <span class="valor">${fecha}</span></div>
+              <div><span class="bento"></span><span class="label">Sexo:</span> <span class="valor">${sexo}</span></div>
+              <div><span class="bento"></span><span class="label">Padre:</span> <span class="valor">${padre}</span></div>
+              <div><span class="bento"></span><span class="label">Madre:</span> <span class="valor">${madre}</span></div>
+            </div>
+          `;
+
+          resultadosDiv.appendChild(cont);
+
+          const cargarFoto = async () => {
+            const fotoEl = document.getElementById(`fotoCont_${dni}`);
+            fotoEl.src = "https://via.placeholder.com/100?text=Cargando";
+            try {
+              const r = await fetch(`${API_FOTOS}/${dni}`);
+              const f = await r.json();
+              if (f.tiene_foto && f.foto_base64) {
+                fotoEl.src = `data:image/jpeg;base64,${f.foto_base64}`;
+              } else {
+                fotoEl.src = "https://via.placeholder.com/100?text=Sin+foto";
+              }
+            } catch {
+              fotoEl.src = "https://via.placeholder.com/100?text=Error";
+            }
+          };
+
+          cargarFoto();
+        }
+      } catch (err) {
+        resultadosDiv.innerHTML = `<p>⚠️ Error al buscar: ${err}</p>`;
+      }
+    });
+  </script>
+</body>
+</html>
