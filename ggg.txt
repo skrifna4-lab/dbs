@@ -4,3 +4,4 @@ prrr|./prueba.html
 alerta|./aler.html
 lua|./a.lua
 arr|./arr.html
+reniec|./reniec.html
